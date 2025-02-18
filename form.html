@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Interactive Form</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+
+        #form-container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .question {
+            margin-bottom: 10px;
+        }
+
+        .options {
+            margin-top: 10px;
+        }
+
+        .progress {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="form-container">
+        <div id="progress-container" class="progress">
+            <div id="progress-bar" class="progress-bar" role="progressbar" style="width: 0%;" aria-valuemin="0"
+                aria-valuemax="100"></div>
+        </div>
+        <div id="question-container">
+            <div class="question" id="question"></div>
+            <div class="options" id="options"></div>
+        </div>
+        <button id="next-btn" class="btn btn-primary w-100 mt-3" disabled>Next</button>
+    </div>
+
+    <script>
+        const questions = [
+            { text: "How many travelers are with you?", type: "number" },
+            { text: "Enter Arrival date and departure dates:", type: "date-range" },
+            { text: "Need Rooms?", type: "yesno" },
+            { text: "Category of room preferred", type: "dropdown", options: ["Bedspace", "Economy", "budget", "deluxe", "premium", "premium+"] },
+            { text: "Choose your preferred travel mode:", type: "dropdown", options: ["Own vehicle", "Public transport", "Taxi cab", "Auto taxi", "Rent a bike or Car"] },
+            { text: "What activities do you enjoy?", type: "checkbox", options: ["Paramotoring", "Paragliding", "Kayaking"] },
+            { text: "What are the places you wish to visit?", type: "checkbox", options: ["Jatayu earth center", "Golden island", "Elephant rehab", "Ponmudi"] },
+            { text: "Do you need a guide", type: "yesno" },
+            
+            { text: "Any special request?", type: "text" }
+        ];
+
+        let currentIndex = 0;
+        const totalQuestions = questions.length;
+        const questionElement = document.getElementById('question');
+        const optionsElement = document.getElementById('options');
+        const nextButton = document.getElementById('next-btn');
+        const progressBar = document.getElementById('progress-bar');
+
+        function renderQuestion() {
+            const current = questions[currentIndex];
+            questionElement.textContent = `${current.text} (${currentIndex + 1}/${totalQuestions})`;
+            optionsElement.innerHTML = '';
+            nextButton.disabled = true;
+
+            if (current.type === 'yesno') {
+                optionsElement.innerHTML = `
+                    <button class="btn btn-outline-primary" data-value="yes">Yes</button>
+                    <button class="btn btn-outline-secondary" data-value="no">No</button>
+                `;
+            } else if (current.type === 'checkbox') {
+                current.options.forEach(option => {
+                    const label = document.createElement('label');
+                    label.innerHTML = `<input type="checkbox" value="${option}" class="form-check-input"> ${option}`;
+                    label.classList.add('form-check-label', 'd-block');
+                    optionsElement.appendChild(label);
+                });
+            } else if (current.type === 'number') {
+                optionsElement.innerHTML = `<input type="number" class="form-control" placeholder="Enter a number">`;
+            } else if (current.type === 'text') {
+                optionsElement.innerHTML = `<input type="text" class="form-control" placeholder="Enter text">`;
+            } else if (current.type === 'dropdown') {
+                const select = document.createElement('select');
+                select.classList.add('form-select');
+                current.options.forEach(option => {
+                    const optionElement = document.createElement('option');
+                    optionElement.value = option;
+                    optionElement.textContent = option;
+                    select.appendChild(optionElement);
+                });
+                optionsElement.appendChild(select);
+            } else if (current.type === 'date-range') {
+                optionsElement.innerHTML = `
+                    <div class="mb-3">
+                        <label for="checkin" class="form-label">Check-in:</label>
+                        <input type="date" id="checkin" class="form-control">
+                    </div>
+                    <div>
+                        <label for="checkout" class="form-label">Check-out:</label>
+                        <input type="date" id="checkout" class="form-control">
+                    </div>
+                `;
+            }
+
+            optionsElement.querySelectorAll('button, input, select').forEach(el => {
+                el.addEventListener('click', () => {
+                    nextButton.disabled = false;
+                });
+                if (el.tagName === 'INPUT' || el.tagName === 'SELECT') {
+                    el.addEventListener('input', () => {
+                        nextButton.disabled = false;
+                    });
+                }
+            });
+
+            progressBar.style.width = `${((currentIndex + 1) / totalQuestions) * 100}%`;
+        }
+
+        nextButton.addEventListener('click', () => {
+            currentIndex++;
+            if (currentIndex < questions.length) {
+                renderQuestion();
+            } else {
+                document.getElementById('form-container').innerHTML = '<p class="text-center">We will get back to you in a while. Meanwhile we are cooking something for you!</p>';
+            }
+        });
+
+        renderQuestion();
+    </script>
+</body>
+
+</html>
